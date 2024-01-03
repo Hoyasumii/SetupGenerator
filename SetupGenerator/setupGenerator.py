@@ -11,7 +11,10 @@ def setupGenerator():
     clear()
     print("Creating setup.py file...")
 
-    name = slugify(typedInput("1. Project name: ", str))
+    name = typedInput("1. Project name: ", str)
+
+    if name != None:
+        name = slugify(name)
 
     version = typedInput("2. Project version: (1.0) ", float, 1.0)
 
@@ -34,7 +37,17 @@ def setupGenerator():
 
     packages = find_packages()
 
-    install_requires = subprocess.run(["python", "-m", "pip", "freeze"], capture_output=True).stdout.decode("utf-8").split("\n")
+    # Get Virtual Enviroment name
+    venv = os.environ.get("VIRTUAL_ENV").split("\\")[-1]
+
+    install_requires = None
+    
+    if os.name == "nt":
+        install_requires = subprocess.run([f".\\{ venv }\\Scripts\\python", "-m", "pip", "freeze"], capture_output=True)
+    else:
+        install_requires = subprocess.run(["source", f"./{ venv }/bin/python", "-m", "pip", "freeze"], capture_output=True)
+
+    install_requires = install_requires.stdout.decode("utf-8").split("\n")
     install_requires = [ package[:-1] for package in install_requires if package != "" ]
 
     entry_points = { 'console_scripts': [ ] }
@@ -59,6 +72,3 @@ setup(
     entry_points={entry_points}
 )
 """)
-
-if __name__ == "__main__":
-    setupGenerator()

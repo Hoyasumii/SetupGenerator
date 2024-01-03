@@ -49,15 +49,15 @@ def setupGenerator():
             install_requires = subprocess.run([f".\\{ venv }\\Scripts\\python", "-m", "pip", "freeze"], capture_output=True)
         else:
             install_requires = subprocess.run(["source", f"./{ venv }/bin/python", "-m", "pip", "freeze"], capture_output=True)
-
-        install_requires = install_requires.stdout.decode("utf-8").split("\n")
-        install_requires = [ package[:-1] for package in install_requires if package != "" ]
     
     else:
         if os.name == "nt":
             install_requires = subprocess.run(["python", "-m", "pip", "freeze"], capture_output=True)
         else:
             install_requires = subprocess.run(["python3", "-m", "pip", "freeze"], capture_output=True)
+
+    install_requires = install_requires.stdout.decode("utf-8").split("\n")
+    install_requires = [ package[:-1] for package in install_requires if package != "" ]
 
     entry_points = { 'console_scripts': [ ] }
     

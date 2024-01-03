@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="hoy-setup-generator",
-    version=1.1.1,
+    version=1.2,
     description="Pequena biblioteca para criar um setup.py rápido.",
     long_description="""## [SetupGenerator](https://pypi.org/project/hoy-setup-generator/)
 - Pequena biblioteca para criar um setup.py rápido.

@@ -1,0 +1,22 @@
+import os
+from setuptools import setup
+
+{% if long_description %}if os.path.isfile("README.md"):
+    with open("README.md", "r", encoding="utf-8") as readme:
+        long_description = readme.read(){% endif %}
+
+setup(
+    name="{{name}}",
+    version={{version}},
+    description="{{description}}",
+    {% if long_description %}long_description=long_description,
+    long_description_content_type="text/markdown",{% endif %}
+    author="{{author}}",
+    author_email="{{author_email}}",
+    url="{{url}}",
+    packages={{packages}},
+    package_data={{package_data}},
+    install_requires={{install_requires}},
+    license="{{license}}",
+    entry_points={{entry_points}}
+)

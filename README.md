@@ -1,11 +1,11 @@
-## [SetupGenerator](https://pypi.org/project/hoy-setup-generator/)
+## [SetupGenerator](https://pypi.org/project/setup-generator/)
 - Pequena biblioteca para criar um setup.py rápido.
 - Clique [**aqui**](https://github.com/Hoyasumii/SetupGenerator) para acessar o repositório.
 ---
 ## Instalação
 - Você pode baixar pelo pip:
 ```
-pip install hoy-setup-generator
+pip install setup-generator
 ```
 ---
 ## Como usar?

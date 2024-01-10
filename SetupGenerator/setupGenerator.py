@@ -1,83 +1,74 @@
-import os, subprocess
-from setuptools import find_packages, setup
-from TypedInput import typedInput
-from KeyboardManager import listenKeyboard
+import os
+from setuptools import find_packages
 from slugify import slugify
+from simpleForm import Form
+from jinja2 import Template
+from .scripts.getPipFreeze import getPipFreeze
 
 def setupGenerator():
 
-    clear = lambda: os.system('cls') if os.name == 'nt' else os.system('clear')
+    libPath = os.path.dirname(os.path.realpath(__file__))
+    setupValues = Form("Setup Generator", spacing=2)
 
-    clear()
-    print("Creating setup.py file...")
+    setupValues.add (
 
-    name = typedInput("1. Project name: ", str)
+        name={
+            "type": str,
+            "description": "Project name",
+            "default": os.path.basename(os.getcwd())
+        },
+        version={
+            "type": float,
+            "description": "Project version",
+            "default": 1.0
+        },
+        description={
+            "type": str,
+            "description": "Project description"
+        },
+        author={
+            "type": str,
+            "description": "Project author"
+        },
+        author_email={
+            "type": str,
+            "description": "Project author email",
+            "validate": r"^[a-zA-Z0-9\._]{4,}@\w.{2,}\w{2,}$"
+        },
+        url={
+            "type": str,
+            "description": "Project url",
+            "validate": r"^(https?|ftp):\/\/(-\.)?([a-zA-Z0-9]+(\.[a-zA-Z]{2,})+|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{1,5})?(\/[a-zA-Z0-9._%+-]*)*(\?[a-zA-Z0-9+&%=]+(#[a-zA-Z0-9_]+)?)?$"
+        },
+        license={
+            "type": str,
+            "description": "Project license",
+            "default": "GPL-3.0"
+        }
+    )
 
-    if name != None:
-        name = slugify(name)
+    setupValues()
+    data = setupValues.values
 
-    version = typedInput("2. Project version: (1.0) ", float, 1.0)
+    data['name'] = slugify(data['name'])
 
-    description = typedInput("3. Project description: ", str)
-
-    long_description = ""
     if os.path.isfile("README.md"):
         with open("README.md", "r", encoding="utf-8") as readme:
-            long_description = readme.read()
+            data['long_description'] = True
 
-    author = typedInput("4. Project author: ", str)
+    data['packages'] = find_packages()
+    data['package_data'] = { key: [ item for item in os.listdir(key.replace('.', '/')) if not item.endswith(".py") and os.path.isfile(f"{os.getcwd()}\\{ key }\\{ item }") ] for key in data['packages'] }
 
-    author_email = typedInput("5. Project author email: ", str)
+    data['install_requires'] = getPipFreeze()
+    data['entry_points'] = { 'console_scripts': [ ] }
 
-    url = typedInput("6. Project url: ", str)
+    with open(f"{ libPath }\\.template", "r", encoding="utf-8") as templateFile:
+        template = Template(templateFile.read())
 
-    license = typedInput("7. Project license: ", str)
-    
-    clear()
+    output = template.render(data)
 
-    packages = find_packages()
-
-    # Get Virtual Enviroment name
-    venv = os.environ.get("VIRTUAL_ENV")
-
-    if venv is not None:
-        venv = venv.split("\\")[-1]
-
-        install_requires = None
-        
-        if os.name == "nt":
-            install_requires = subprocess.run([f".\\{ venv }\\Scripts\\python", "-m", "pip", "freeze"], capture_output=True)
-        else:
-            install_requires = subprocess.run(["source", f"./{ venv }/bin/python", "-m", "pip", "freeze"], capture_output=True)
-    
-    else:
-        if os.name == "nt":
-            install_requires = subprocess.run(["python", "-m", "pip", "freeze"], capture_output=True)
-        else:
-            install_requires = subprocess.run(["python3", "-m", "pip", "freeze"], capture_output=True)
-
-    install_requires = install_requires.stdout.decode("utf-8").split("\n")
-    install_requires = [ package[:-1] for package in install_requires if package != "" ]
-
-    entry_points = { 'console_scripts': [ ] }
-    
     with open("setup.py", "w", encoding="utf-8") as setupFile:
+        setupFile.write(output)
 
-        setupFile.write(
-f"""from setuptools import setup
-
-setup(
-    name="{name}",
-    version={version},
-    description="{description}",
-    long_description=\"\"\"{long_description}\"\"\",
-    long_description_content_type="text/markdown",
-    author="{author}",
-    author_email="{author_email}",
-    url="{url}",
-    packages={packages},
-    install_requires={install_requires},
-    license="{license}",
-    entry_points={entry_points}
-)
-""")
+if __name__ == "__main__":
+    setupGenerator()
